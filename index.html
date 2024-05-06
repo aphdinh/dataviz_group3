@@ -223,6 +223,16 @@
         onEachFeature: onEachFeature,
       }).addTo(mymap);
 
+      //Filter
+      function filterCountries(center) {
+        var filteredCountries = countriesData.features.filter(function (
+          country
+        ) {
+          return country.properties.distribution_center_x === center;
+        });
+        return filteredCountries;
+      }
+
       // Legend
       var legend = L.control({ position: 'bottomleft' });
 
@@ -265,8 +275,17 @@
       };
 
       info.update = function (props) {
+        var distributionCenter = props ? props.distribution_center_x : null;
+        var countries = filterCountries(distributionCenter);
+
+        // Generate HTML for the list of countries
+        var countriesList = '';
+        countries.forEach(function (country) {
+          countriesList += '<li>' + country.properties.name + '</li>';
+        });
+
         this._div.innerHTML =
-          '<h2>Performance of SunCharge in each country</h2>' +
+          '<h2>Suncharge product distribution in each country</h2>' +
           (props
             ? '<h3>' +
               props.admin +
@@ -283,6 +302,9 @@
               '<b>Total number of customers: </b>' +
               props.customers_per_country +
               '<br />' +
+              '<b>Countries that share the same distribution center: </b><ul>' +
+              countriesList +
+              '</ul>' +
               '<canvas id="infoChart" width="280" height="150"></canvas>' // Include canvas in HTML
             : 'Hover over an European country');
 
@@ -323,6 +345,7 @@
                   formatter: function (value) {
                     // Customize label format
                     return Math.round(value) + '%';
+                    x;
                   },
                 },
               },
