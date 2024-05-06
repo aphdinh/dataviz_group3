@@ -18,6 +18,7 @@
     ></script>
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
     <script src="https://api.tiles.mapbox.com/mapbox-gl-js/v0.45.0/mapbox-gl.js"></script>
     <link
@@ -34,7 +35,7 @@
 
   <style>
     #mapid {
-      height: 600px;
+      height: 800px;
     }
 
     .info {
@@ -60,7 +61,6 @@
 
     .legend {
       line-height: 18px;
-      /*color: #555;*/
       color: white;
       width: auto;
     }
@@ -74,14 +74,47 @@
     }
 
     /* Custom styles for popup */
-    .leaflet-popup-content-wrapper {
-      width: 400px; /* Increased width */
-      height: 300px; /* Increased height */
-    }
-
-    .leaflet-popup-content {
+    #hover {
+      position: fixed;
+      background: #000;
       width: 100%;
       height: 100%;
+      opacity: 0.6;
+      z-index: 9998;
+    }
+
+    #popup {
+      position: fixed;
+      width: 600px;
+      height: 180px;
+      background: #fff;
+      left: 50%;
+      top: 50%;
+      border-radius: 5px;
+      padding: 60px 0;
+      margin-left: -320px; /* width/2 + padding-left */
+      margin-top: -150px; /* height/2 + padding-top */
+      text-align: center;
+      box-shadow: 0 0 10px 0 #000;
+      z-index: 9999;
+    }
+
+    #close {
+      position: absolute;
+      background: black;
+      color: white;
+      right: -15px;
+      top: -15px;
+      border-radius: 50%;
+      width: 30px;
+      height: 30px;
+      line-height: 30px;
+      text-align: center;
+      font-size: 8px;
+      font-weight: bold;
+      font-family: 'Arial Black', Arial, sans-serif;
+      cursor: pointer;
+      box-shadow: 0 0 10px 0 #000;
     }
   </style>
 
@@ -175,11 +208,12 @@
           click: function (e) {
             var layer = e.target;
             var popupContent =
-              '<h3>Order Delays</h3>' +
+              "<div id='popup'><span id='close' onclick='closePopup()'>&times;</span><h3>Order Delays</h3>" +
               'Delays: ' +
               layer.feature.properties.order_delays_countries +
-              ' orders';
+              ' orders</div>';
             layer.bindPopup(popupContent).openPopup();
+            $('#hover').show(); // Show dark overlay
           },
         });
       }
@@ -190,7 +224,7 @@
       }).addTo(mymap);
 
       // Legend
-      var legend = L.control({ position: 'bottomright' });
+      var legend = L.control({ position: 'bottomleft' });
 
       legend.onAdd = function (map) {
         var div = L.DomUtil.create('div', 'info legend'),
@@ -220,45 +254,90 @@
       // Custom control
       var info = L.control();
 
+      // Assuming countriesData is an array containing data for all countries
+
       info.onAdd = function (map) {
         this._div = L.DomUtil.create('div', 'info'); // create a div with a class "info"
+        this._div.innerHTML =
+          '<canvas id="infoChart" width="140" height="100"></canvas>'; // Setup a canvas element for the pie chart
         this.update();
         return this._div;
       };
 
-      // method that we will use to update the control based on feature properties passed
       info.update = function (props) {
         this._div.innerHTML =
-          '<h2>Distribution center of each country</h2>' +
+          '<h2>Performance of SunCharge in each country</h2>' +
           (props
             ? '<h3>' +
               props.admin +
               '</h3>' +
-              '<b>' +
-              'Distribution center: ' +
-              '</b>' +
+              '<b>Distribution center: </b>' +
               props.distribution_center_x +
               '<br />' +
-              '<b>' +
-              ' Total number of order: ' +
-              '</b>' +
-              props.total_orders_country / 1000 +
+              '<b>Total number of orders: </b>' +
+              props.total_orders_country +
               '<br />' +
-              '<b>' +
-              'Total number of sales center:' +
-              '</b>' +
-              '<br />' +
+              '<b>Total number of sales centers: </b>' +
               props.total_sales_center +
               '<br />' +
-              '<b>' +
-              'Total number of customers:' +
-              '</b>' +
+              '<b>Total number of customers: </b>' +
+              props.customers_per_country +
               '<br />' +
-              props.customers_per_country
+              '<canvas id="infoChart" width="280" height="150"></canvas>' // Include canvas in HTML
             : 'Hover over an European country');
+
+        // Initialize pie chart if properties are present
+        Chart.defaults.color = '#fff';
+        if (props) {
+          var ctx = document.getElementById('infoChart').getContext('2d');
+          var infoChart = new Chart(ctx, {
+            type: 'pie',
+            data: {
+              labels: ['Delays', 'On Time'],
+              datasets: [
+                {
+                  data: [
+                    props.percentage_delays_country,
+                    props.percentage_on_time_country,
+                  ],
+                  backgroundColor: ['#FF6384', '#36A2EB'],
+                  hoverBackgroundColor: ['#FF6384', '#36A2EB'],
+                },
+              ],
+            },
+            options: {
+              responsive: true,
+              maintainAspectRatio: true,
+              legend: {
+                position: 'bottom',
+                labels: {
+                  fontColor: 'white', // Set font color to white
+                },
+              },
+              plugins: {
+                legend: true,
+                tooltip: true,
+                datalabels: {
+                  // Enable data labels
+                  color: 'white', // Set font color to white
+                  formatter: function (value) {
+                    // Customize label format
+                    return Math.round(value) + '%';
+                  },
+                },
+              },
+            },
+          });
+        }
       };
 
       info.addTo(mymap);
+
+      // Function to close the popup and hide overlay
+      function closePopup() {
+        mymap.closePopup();
+        $('#hover').hide();
+      }
 
       console.log(countriesData);
     </script>
