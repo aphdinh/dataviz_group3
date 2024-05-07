@@ -269,7 +269,7 @@
       info.onAdd = function (map) {
         this._div = L.DomUtil.create('div', 'info'); // create a div with a class "info"
         this._div.innerHTML =
-          '<canvas id="infoChart" width="140" height="100"></canvas>'; // Setup a canvas element for the pie chart
+          '<canvas id="infoChart" width="140" height="100"></canvas><canvas id="salesLineChart" width="280" height="150"></canvas>'; // Setup canvas elements for the pie chart and line plot
         this.update();
         return this._div;
       };
@@ -280,8 +280,14 @@
 
         // Generate HTML for the list of countries
         var countriesList = '';
+        var salesData = []; // To store sales center data for line plot
+        var delaysData = []; // To store delay data for bar plot
+        var onTimeData = []; // To store on-time data for bar plot
         countries.forEach(function (country) {
           countriesList += '<li>' + country.properties.name + '</li>';
+          salesData.push(country.properties.total_sales_country);
+          delaysData.push(country.properties.order_delays_country);
+          onTimeData.push(country.properties.order_on_time_country);
         });
 
         this._div.innerHTML =
@@ -305,48 +311,77 @@
               '<b>Countries that share the same distribution center: </b><ul>' +
               countriesList +
               '</ul>' +
-              '<canvas id="infoChart" width="280" height="150"></canvas>' // Include canvas in HTML
+              '<canvas id="salesLineChart" width="280" height="150"></canvas>' // Canvas for line and bar plot
             : 'Hover over an European country');
 
-        // Initialize pie chart if properties are present
+        // Initialize combined chart
         Chart.defaults.color = '#fff';
         if (props) {
-          var ctx = document.getElementById('infoChart').getContext('2d');
-          var infoChart = new Chart(ctx, {
-            type: 'pie',
+          var ctxCombined = document
+            .getElementById('salesLineChart')
+            .getContext('2d');
+          var combinedChart = new Chart(ctxCombined, {
+            type: 'bar',
             data: {
-              labels: ['Delays', 'On Time'],
+              labels: countries.map((country) => country.properties.name),
               datasets: [
                 {
-                  data: [
-                    props.percentage_delays_country,
-                    props.percentage_on_time_country,
-                  ],
-                  backgroundColor: ['#FF6384', '#36A2EB'],
-                  hoverBackgroundColor: ['#FF6384', '#36A2EB'],
+                  type: 'line',
+                  label: 'Total Sales',
+                  data: salesData,
+                  borderColor: 'rgb(75, 192, 192)',
+                  backgroundColor: 'rgba(75, 192, 192, 0.5)',
+                  fill: false,
+                  yAxisID: 'y-axis-2',
+                  tension: 0.1,
+                },
+                {
+                  type: 'bar',
+                  label: 'Order Delays',
+                  data: delaysData,
+                  backgroundColor: 'rgba(255, 99, 132, 0.8)',
+                  yAxisID: 'y-axis-1',
+                },
+                {
+                  type: 'bar',
+                  label: 'Orders On Time',
+                  data: onTimeData,
+                  backgroundColor: 'rgba(54, 162, 235, 0.8)',
+                  yAxisID: 'y-axis-1',
                 },
               ],
             },
             options: {
               responsive: true,
               maintainAspectRatio: true,
-              legend: {
-                position: 'bottom',
-                labels: {
-                  fontColor: 'white', // Set font color to white
+              scales: {
+                'y-axis-1': {
+                  type: 'linear',
+                  display: true,
+                  position: 'left',
+                  beginAtZero: true,
+                },
+                'y-axis-2': {
+                  type: 'linear',
+                  display: true,
+                  position: 'right',
+                  beginAtZero: true,
+                  grid: {
+                    drawOnChartArea: false,
+                  },
                 },
               },
               plugins: {
-                legend: true,
-                tooltip: true,
-                datalabels: {
-                  // Enable data labels
-                  color: 'white', // Set font color to white
-                  formatter: function (value) {
-                    // Customize label format
-                    return Math.round(value) + '%';
-                    x;
+                legend: {
+                  display: true,
+                  position: 'top',
+                  labels: {
+                    color: 'white',
                   },
+                },
+                tooltip: {
+                  mode: 'index',
+                  intersect: false,
                 },
               },
             },
