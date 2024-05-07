@@ -291,7 +291,7 @@
         });
 
         this._div.innerHTML =
-          '<h2>Suncharge product distribution in each country</h2>' +
+          '<h2>Product distribution in each country</h2>' +
           (props
             ? '<h3>' +
               props.admin +
@@ -299,18 +299,16 @@
               '<b>Distribution center: </b>' +
               props.distribution_center_x +
               '<br />' +
+              '<b>Total number of sales: </b>' +
+              props.total_sales_country +
+              '<br />' +
               '<b>Total number of orders: </b>' +
               props.total_orders_country +
-              '<br />' +
-              '<b>Total number of sales centers: </b>' +
-              props.total_sales_center +
               '<br />' +
               '<b>Total number of customers: </b>' +
               props.customers_per_country +
               '<br />' +
-              '<b>Countries that share the same distribution center: </b><ul>' +
-              countriesList +
-              '</ul>' +
+              '<h3>Comparing countries that receive goods from the same distribution center: </h3>' +
               '<canvas id="salesLineChart" width="280" height="150"></canvas>' // Canvas for line and bar plot
             : 'Hover over an European country');
 
