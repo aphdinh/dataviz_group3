@@ -1,6 +1,6 @@
 # map-plot
 
-[Edit in StackBlitz next generation editor ⚡️](https://stackblitz.com/~/github.com/aphdinh/map-plot)
+[[Edit in StackBlitz next generation editor ⚡️](https://stackblitz.com/~/github.com/aphdinh/map-plot)](https://kuleuven-my.sharepoint.com/:v:/r/personal/anhphuong_dinh_student_kuleuven_be/Documents/Recordings/Meeting%20with%20Anh%20Phuong%20Dinh-20240509_160414-Meeting%20Recording.mp4?csf=1&web=1&e=lNpc9I&nav=eyJyZWZlcnJhbEluZm8iOnsicmVmZXJyYWxBcHAiOiJTdHJlYW1XZWJBcHAiLCJyZWZlcnJhbFZpZXciOiJTaGFyZURpYWxvZy1MaW5rIiwicmVmZXJyYWxBcHBQbGF0Zm9ybSI6IldlYiIsInJlZmVycmFsTW9kZSI6InZpZXcifX0%3D)
 
 The combination of a scatterplot (bubble chart) and radar plot can be used to examine product quantities in the supply chain.
 The visualization starts with a scatterplot, the x-axis is the total orders, y-axis is the late delivery orders, and the data points are corresponding to specific material plants, and the size of the bubbles reveals the total sales volume. the slopes of the data points shows the late delivery rate, the steeper the slope then the higher the late delivery rate, indicates a potential supply issue. However in the Suncharge sales data, the late delivery rates of all the material plants are similar, which are around 20%, so we will just randomly choose 1 material plant for the radar plot illustration. 
